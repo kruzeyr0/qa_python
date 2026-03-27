@@ -1,0 +1,5 @@
+ERROR: Різниця між часами: 35.0 секунд в 04:51:17 та 04:50:42 IN { Trade (101, len 36) Queue 0 PriceClass 1 Timestamp 04:51:17 Key TSTFEED0300|7E3E|0400 TradePrice 5 TradeSize 0 }
+ERROR: Різниця між часами: 35.0 секунд в 03:39:11 та 03:38:36 IN { Trade (101, len 36) Queue 0 PriceClass 1 Timestamp 03:39:11 Key TSTFEED0300|7E3E|0400 TradePrice 5 TradeSize 0 }
+ERROR: Різниця між часами: 36.0 секунд в 02:27:06 та 02:26:30 IN { Trade (101, len 36) Queue 0 PriceClass 1 Timestamp 02:27:06 Key TSTFEED0300|7E3E|0400 TradePrice 5 TradeSize 0 }
+WARNING: Різниця між часами: 32.0 секунд в 01:35:10 та 01:34:38 IN { Trade (101, len 36) Queue 0 PriceClass 1 Timestamp 01:35:10 Key TSTFEED0300|7E3E|0400 TradePrice 5 TradeSize 0 }
+ERROR: Різниця між часами: 35.0 секунд в 01:14:58 та 01:14:23 IN { Trade (101, len 36) Queue 0 PriceClass 1 Timestamp 01:14:58 Key TSTFEED0300|7E3E|0400 TradePrice 5 TradeSize 0 }
