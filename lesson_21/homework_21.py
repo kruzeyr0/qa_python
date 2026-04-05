@@ -1,7 +1,5 @@
-from sqlalchemy import create_engine, text, Table, Column, Integer, ForeignKey, String, MetaData
+from sqlalchemy import create_engine, Table, Column, Integer, ForeignKey, String
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-import psycopg2
-import psycopg2.extras
 import random
 
 DATABASE_URL = "postgresql+psycopg2://admin:admin@localhost:5432/hillel_db"
@@ -53,71 +51,118 @@ class Course(Base): # створюємо модель для таблиці cour
     
 # Створюємо таблиці в базі даних та додаємо студентів та курси
 Base.metadata.create_all(engine)
-course_name = ['Java', 'Python', 'JavaScript']  # список назв курсів
 
-courses = []
 
-for name in course_name:    # проходимо по списку назв курсів та створюємо об'єкти Course, додаємо їх до сесії та зберігаємо в список courses
-    course = Course(name=name)
+### Створюємо функції
+# Створюємо курс, якщо він ще не існує в базі даних, та повертаємо його
+def create_course(session, course_name):
+    existing = get_course_by_name(session, course_name)  # перевіряємо, чи курс з таким ім'ям вже існує в базі даних
+    if existing:
+        print(f"Course '{course_name}' already exists. Skipping creation.")
+        return existing  # повертаємо існуючий курс, якщо він вже є в базі даних
+    
+    course = Course(name=course_name)  # створюємо новий курс
     session.add(course)
-    courses.append(course)
+    session.commit()
+    return course
 
-student_names = ['Andrii', 'Masha', 'Alex', 'Tanya', 'Sergii']  # список імен студентів
+# Створюємо студента, якщо він ще не існує в базі даних, та призначаємо йому випадкові курси, потім повертаємо його
+def create_student(session, student_names, courses):
+    students = []
 
-students = []
+    for name in student_names:
+        existing_student = get_student_by_name(session, name)  # перевіряємо, чи студент з таким ім'ям вже існує в базі даних
+        if existing_student:
+            print(f"Student '{name}' already exists. Skipping creation.")
+            students.append(existing_student)  # додаємо існуючого студента до списку
+            continue
 
-for name in student_names:  # проходимо по списку імен студентів та створюємо об'єкти Student, додаємо їх до сесії та зберігаємо в список students
-    student = Student(name=name)
-    student.courses = random.sample(courses, random.randint(1, 2))  # випадковим чином призначаємо студенту від 1 до 2 курсів
-    session.add(student)
-    students.append(student)
-session.commit()
+        student = Student(name=name)  # створюємо нового студента
+        student.courses = random.sample(courses, random.randint(1, 2))  # випадковим чином призначаємо студенту від 1 до 2 курсів
+        session.add(student)
+        students.append(student)
+
+    session.commit()
+    return students
 
 
 # Виводимо всіх студентів та їх курси
-courses = session.query(Course).all()  # отримуємо всі курси з бази даних
-for course in courses:  # проходимо по кожному курсу та виводимо його назву та імена студентів, які його відвідують
-    print(f"Course: {course.name}")
-    for student in course.students:
-        print(f" - Student: {student.name}")
+def get_all_courses_and_students(session):
+    courses = session.query(Course).all()  # отримуємо всі курси з бази даних
 
-# Виводимо курси студента з ім'ям "Andrii"
-student = session.query(Student).filter_by(name="Andrii").first()  # отримуємо студента з ім'ям "Andrii" з бази даних
-if student:  # якщо студент знайдений, виводимо його курси
-    print(f"Student: {student.name}")
-    for course in student.courses:
-        print(f" - Course: {course.name}")
-else:  # якщо студент не знайдений, виводимо повідомлення
-    print("Student 'Andrii' not found.")
+    for course in courses:  # проходимо по кожному курсу та виводимо його назву та імена студентів, які його відвідують
+        print(f"Course: {course.name}")
+        for student in course.students:
+            print(f" - Student: {student.name}")
 
-# Виводимо студентів, які відвідують курс з ім'ям "Python"
-course = session.query(Course).filter_by(name="Python").first()  # отримуємо курс з ім'ям "Python" з бази даних
-if course:  # якщо курс знайдений, виводимо його студентів
-    print(f"Course: {course.name}")
-    for student in course.students:
-        print(f" - Student: {student.name}")
-else:  # якщо курс не знайдений, виводимо повідомлення
-    print("Course 'Python' not found.")
+# Вертаємо курс за ім'ям
+def get_course_by_name(session, course_name):
+    return session.query(Course).filter_by(name=course_name).first()  # отримуємо курс з ім'ям з бази даних
 
-# Оновлюємо ім'я курсу "JavaScript" на "JS"
-course = session.query(Course).filter_by(name="JavaScript").first()  # отримуємо курс з ім'ям "JavaScript" з бази даних
-if course:  # якщо курс знайдений, оновлюємо його ім'я та зберігаємо зміни
-    course.name = "JS"
-    session.commit()
-    print("Course name updated to 'JS'.")
+# Вертаємо студента за ім'ям
+def get_student_by_name(session, student_name):
+    return session.query(Student).filter_by(name=student_name).first()  # отримуємо студента з ім'ям з бази даних
 
-# Видаляємо студента з ім'ям "Alex"
-student = session.query(Student).filter_by(name="Alex").first()  # отримуємо студента з ім'ям "Alex" з бази даних
-if student:  # якщо студент знайдений, видаляємо його та зберігаємо зміни
-    session.delete(student)
-    session.commit()
-    print("Student 'Alex' deleted.")
 
-# Виводимо стейт студента з ім'ям "Alex" після видалення
-print("\nCheck if student 'Alex' still exists:")
-student = session.query(Student).filter_by(name="Alex").first()
-if student:  # якщо студент знайдений, виводимо його ім'я
-    print(f"Student: {student.name}")
-else:  # якщо студент не знайдений, виводимо повідомлення
-    print("Student 'Alex' not found.")
+# Виводимо курси студента з ім'ям
+def print_student_by_name(session, student_name):
+    student = get_student_by_name(session, student_name)  # отримуємо студента з ім'ям з бази даних
 
+    if student:  # якщо студент знайдений, виводимо його курси
+        print(f"Student: {student.name}")
+        for course in student.courses:
+            print(f" - Course: {course.name}")
+    else:  # якщо студент не знайдений, виводимо повідомлення
+        print(f"Student '{student_name}' not found.")
+
+# Виводимо студентів, які відвідують курс за ім'ям
+def print_students_by_course_name(session, course_name):
+    course = get_course_by_name(session, course_name)  # отримуємо курс з ім'ям з бази даних
+
+    if course:  # якщо курс знайдений, виводимо його студентів
+        print(f"Course: {course.name}")
+        for student in course.students:
+            print(f" - Student: {student.name}")
+    else:  # якщо курс не знайдений, виводимо повідомлення
+        print(f"Course '{course_name}' not found.")
+
+# Оновлюємо ім'я курсу
+def update_course_name(session, old_name, new_name):
+    course = get_course_by_name(session, old_name)  # отримуємо курс з ім'ям з бази даних
+
+    if course:  # якщо курс знайдений, оновлюємо його ім'я та зберігаємо зміни
+        course.name = new_name
+        session.commit()
+        print(f"Course '{old_name}' updated to '{new_name}'.")
+    else:
+        print(f"Course '{old_name}' not found.")
+
+# Видаляємо студента за ім'ям
+def delete_student_by_name(session, student_name):
+    student = get_student_by_name(session, student_name)  # отримуємо студента з ім'ям з бази даних
+
+    if student:  # якщо студент знайдений, видаляємо його та зберігаємо зміни
+        session.delete(student)
+        session.commit()
+        print(f"Student '{student_name}' deleted.")
+
+
+### Викликаємо функції
+# Створення курсів та студентів
+student_names = ['Andrii', 'Masha', 'Alex', 'Tanya', 'Sergii']  # список імен студентів
+course_name = ['Java', 'Python', 'JavaScript']  # список назв курсів
+
+courses = []
+for name in course_name:    # проходимо по списку назв курсів та створюємо об'єкти Course, додаємо їх до сесії та зберігаємо в список courses
+    course = create_course(session, name)
+    courses.append(course)
+
+create_student(session, student_names, courses)  # створюємо студентів та призначаємо їм курси
+
+# Виводимо інформацію про студентів та курси за допомогою функцій, а також демонструємо оновлення та видалення даних (зокрема, спробу вивести інформацію про видаленого студента)
+print_student_by_name(session, "Andrii")
+delete_student_by_name(session, "Alex")
+print_student_by_name(session, "Alex") # спроба вивести інформацію про видаленого студента
+update_course_name(session, "JavaScript", "JS")
+print_students_by_course_name(session, "JS")
+get_all_courses_and_students(session)
