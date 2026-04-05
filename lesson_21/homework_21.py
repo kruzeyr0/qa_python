@@ -57,6 +57,7 @@ Base.metadata.create_all(engine)
 # Створюємо курс, якщо він ще не існує в базі даних, та повертаємо його
 def create_course(session, course_name):
     existing = get_course_by_name(session, course_name)  # перевіряємо, чи курс з таким ім'ям вже існує в базі даних
+
     if existing:
         print(f"Course '{course_name}' already exists. Skipping creation.")
         return existing  # повертаємо існуючий курс, якщо він вже є в базі даних
@@ -67,23 +68,19 @@ def create_course(session, course_name):
     return course
 
 # Створюємо студента, якщо він ще не існує в базі даних, та призначаємо йому випадкові курси, потім повертаємо його
-def create_student(session, student_names, courses):
-    students = []
+def create_student(session, student_name, courses):
+    existing_student = get_student_by_name(session, student_name)  # перевіряємо, чи студент з таким ім'ям вже існує в базі даних
 
-    for name in student_names:
-        existing_student = get_student_by_name(session, name)  # перевіряємо, чи студент з таким ім'ям вже існує в базі даних
-        if existing_student:
-            print(f"Student '{name}' already exists. Skipping creation.")
-            students.append(existing_student)  # додаємо існуючого студента до списку
-            continue
-
-        student = Student(name=name)  # створюємо нового студента
-        student.courses = random.sample(courses, random.randint(1, 2))  # випадковим чином призначаємо студенту від 1 до 2 курсів
-        session.add(student)
-        students.append(student)
-
+    if existing_student:
+        print(f"Student '{student_name}' already exists. Skipping creation.")
+        return existing_student  # повертаємо існуючого студента, якщо він уже є в базі даних
+        
+    student = Student(name=student_name)  # створюємо нового студента
+    student.courses = random.sample(courses, random.randint(1, 2))  # випадковим чином призначаємо студенту від 1 до 2 курсів
+    session.add(student)
     session.commit()
-    return students
+
+    return student
 
 
 # Виводимо всіх студентів та їх курси
@@ -157,7 +154,8 @@ for name in course_name:    # проходимо по списку назв ку
     course = create_course(session, name)
     courses.append(course)
 
-create_student(session, student_names, courses)  # створюємо студентів та призначаємо їм курси
+for name in student_names:   # проходимо по списку імен студентів та створюємо об'єкти Student, призначаємо їм випадкові курси та додаємо їх до сесії
+    create_student(session, name, courses) 
 
 # Виводимо інформацію про студентів та курси за допомогою функцій, а також демонструємо оновлення та видалення даних (зокрема, спробу вивести інформацію про видаленого студента)
 print_student_by_name(session, "Andrii")
