@@ -1,0 +1,2 @@
+Course 'Python' already exists. Skipping creation.
+Student 'TestUser' already exists. Skipping creation.

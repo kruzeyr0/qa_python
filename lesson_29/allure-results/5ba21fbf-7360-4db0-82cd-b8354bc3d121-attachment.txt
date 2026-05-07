@@ -1,0 +1,2 @@
+Course 'JS' already exists. Skipping creation.
+Student 'DeleteMe' deleted.
