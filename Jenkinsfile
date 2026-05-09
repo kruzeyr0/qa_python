@@ -18,7 +18,7 @@ pipeline {
 
         stage('Run tests') {
             steps {
-                bat 'python -m pytest lesson_29/tests --alluredir=allure-results -v'
+                bat 'set PYTHONPATH=lesson_29 && python -m pytest lesson_29/tests --alluredir=allure-results -v'
             }
         }
     }
