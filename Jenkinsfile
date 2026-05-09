@@ -24,11 +24,17 @@ pipeline {
     }
 
     post {
-        always {
-            allure([
-                includeProperties: false,
-                results: [[path: 'allure-results']]
-            ])
-        }
-    }
+		always {
+			allure(
+				includeProperties: false,
+				results: [[path: 'allure-results']]
+			)
+
+			emailext(
+				subject: "Jenkins Build: ${currentBuild.currentResult}",
+				body: "Build finished with status: ${currentBuild.currentResult}",
+				to: "katrich.andrey@ukr.net"
+			)
+		}
+	}
 }
