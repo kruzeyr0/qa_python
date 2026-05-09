@@ -31,9 +31,11 @@ pipeline {
 			)
 
 			emailext(
+				to: "arhimond150@gmail.com",
 				subject: "Jenkins Build: ${currentBuild.currentResult}",
 				body: "Build finished with status: ${currentBuild.currentResult}",
-				to: "arhimond150@gmail.com"
+				mimeType: 'text/plain'
+				
 			)
 		}
 	}
