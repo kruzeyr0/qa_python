@@ -32,9 +32,12 @@ pipeline {
 
 			emailext(
 				to: "arhimond150@gmail.com",
+				from: "arhimond150@gmail.com",
+				replyTo: "arhimond150@gmail.com",
 				subject: "Jenkins Build: ${currentBuild.currentResult}",
 				body: "Build finished with status: ${currentBuild.currentResult}",
 				mimeType: 'text/plain'
+
 				
 			)
 		}
